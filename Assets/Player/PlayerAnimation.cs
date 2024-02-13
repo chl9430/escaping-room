@@ -24,38 +24,13 @@ public class PlayerAnimation : MonoBehaviour
             animator.SetBool("isAscending", false);
             animator.SetBool("isDescending", false);
 
-            if (controller.CurrentInput.x < 0f)
+            if (controller.IsWalking)
             {
-                animator.SetBool("isLeft", true);
+                animator.SetBool("isWalking", true);
             }
-
-            if (controller.CurrentInput.x > 0f)
+            else
             {
-                animator.SetBool("isRight", true);
-            }
-
-            if (controller.CurrentInput.y < 0f)
-            {
-                animator.SetFloat("ZValue", -1.0f);
-                animator.SetBool("isVertical", true);
-            }
-
-            if (controller.CurrentInput.y > 0f)
-            {
-                animator.SetFloat("ZValue", 1.0f);
-                animator.SetBool("isVertical", true);
-            }
-
-            if (controller.CurrentInput.x == 0f)
-            {
-                animator.SetBool("isLeft", false);
-                animator.SetBool("isRight", false);
-            }
-
-            if (controller.CurrentInput.y == 0f)
-            {
-                animator.SetFloat("ZValue", 0f);
-                animator.SetBool("isVertical", false);
+                animator.SetBool("isWalking", false);
             }
         }
         else
@@ -71,15 +46,6 @@ public class PlayerAnimation : MonoBehaviour
                 animator.SetBool("isAscending", false);
                 animator.SetBool("isDescending", true);
             }
-        }
-
-        if (controller.IsShooting)
-        {
-            animator.SetBool("isShooting", true);
-        }
-        else
-        {
-            animator.SetBool("isShooting", false);
         }
     }
 }

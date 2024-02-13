@@ -6,28 +6,22 @@ public class TPSPlayerController : MonoBehaviour
 {
     [SerializeField] Transform characterBody;
     [SerializeField] Transform cameraArm;
-    [SerializeField] Transform shooterPos;
 
-    [SerializeField] float walkSpeed;
+    [SerializeField] float power;
     [SerializeField] float jumpPower;
     [SerializeField] float maxSpeed;
 
     Rigidbody rigid;
-    Transform spine;
-    Vector2 moveInput;
 
     bool isWalking = false;
     bool isInAir = true;
-    bool isShooting = false;
-    public Vector2 CurrentInput {  get { return moveInput; } }
+    public bool isYZero;
     public bool IsWalking { get { return isWalking; } }
     public bool IsInAir { get {  return isInAir; } }
-    public bool IsShooting { get { return isShooting; } }
 
     void Start()
     {
         rigid = GetComponent<Rigidbody>();
-        spine = characterBody.GetComponent<Animator>().GetBoneTransform(HumanBodyBones.Spine);
     }
 
     void Update()
@@ -35,37 +29,16 @@ public class TPSPlayerController : MonoBehaviour
         LookAround();
         Move();
         Jump();
-        Shoot();
-    }
 
-    void LateUpdate()
-    {
-        Vector3 camForward = cameraArm.forward;
-        camForward.y = 0;
-        characterBody.rotation = Quaternion.LookRotation(camForward);
+        Debug.Log(rigid.velocity.y);
 
-        // spine.LookAt(camForward);
-        spine.rotation = Quaternion.LookRotation(new Vector3(cameraArm.forward.x, cameraArm.forward.y + 0.5f, cameraArm.forward.z));
-    }
-
-    void Shoot()
-    {
-        if (Input.GetMouseButtonDown(0))
+        if (rigid.velocity.y == 0f)
         {
-            isShooting = true;
-
-            RaycastHit hit;
-            if (Physics.Raycast(shooterPos.position, Vector3.forward, out hit, 1f))
-            {
-                //float distanceToGround = hit.distance;
-                //transform.position = new Vector3(transform.position.x, distanceToGround, transform.position.z);
-            }
-            Debug.DrawRay(shooterPos.position, Vector3.forward, Color.red);
+            isYZero = true;
         }
-
-        if (Input.GetMouseButtonUp(0))
+        else
         {
-            isShooting = false;
+            isYZero = false;
         }
     }
 
@@ -79,8 +52,7 @@ public class TPSPlayerController : MonoBehaviour
 
     void Move()
     {
-        moveInput = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
-        moveInput.Normalize();
+        Vector2 moveInput = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
         isWalking = moveInput.magnitude != 0;
 
         if (isWalking)
@@ -89,7 +61,9 @@ public class TPSPlayerController : MonoBehaviour
             Vector3 lookRight = new Vector3(cameraArm.right.x, 0f, cameraArm.right.z).normalized;
             Vector3 moveDir = lookForward * moveInput.y + lookRight * moveInput.x;
 
-            transform.position += moveDir * Time.deltaTime * walkSpeed;
+            characterBody.forward = moveDir;
+            transform.position += moveDir * Time.deltaTime * power;
+            // rigid.AddForce(moveDir.normalized * power, ForceMode.VelocityChange);
 
             if (Mathf.Abs(rigid.velocity.x) > maxSpeed)
             {
@@ -123,19 +97,15 @@ public class TPSPlayerController : MonoBehaviour
         }
 
         cameraArm.rotation = Quaternion.Euler(x, camAngle.y + mouseDelta.x, camAngle.z);
-
-        //Vector3 camForward = cameraArm.forward;
-        ////camForward.y = 0;
-        ////characterBody.rotation = Quaternion.LookRotation(camForward);
-
-        //// spine.LookAt(camForward);
-        //spine.localRotation = Quaternion.LookRotation(camForward);
     }
 
     void OnCollisionStay(Collision collision)
     {
         if (collision.gameObject.CompareTag("Respawn"))
         {
+            //Vector3 velocity = rigid.velocity;
+            //rigid.velocity = new Vector3(velocity.x, 0f, velocity.z);
+
             isInAir = false;
         }
     }
